@@ -1,0 +1,22 @@
+body {
+	background-color: #000000;
+	color: #CCCCCC;
+	font-family: verdana,arial,sans-serif;
+	font-size: 0.8em;
+	margin: 0;
+	padding: 0;
+}
+
+.games_title {
+	float: left;
+}
+
+.games_help {
+	float: right;
+	text-align: right;
+	position: relative;
+}
+
+.games_help_content {
+	text-align: left;
+}
