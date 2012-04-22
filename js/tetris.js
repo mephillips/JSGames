@@ -92,6 +92,11 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 	 */
 	__delay : 0,
 
+	/**
+	 * Reference to timeout used to make blocks fall.
+	 */
+	__timeout : null,
+
 
 	start : function() {
 		this.__cleanup();
@@ -148,80 +153,38 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 	},
 
 	__fallBlock : function() {
-		var shortDelay = false;
-		var key = this.lastKey;
-		this.lastKey = null;
-
-		if (key == 'pause') {
-			this.__state = 'paused';
-			this.__messageText.update(this._text('tetris_paused'));
-			this.__messageText.show();
-			return;
-		}
-
 		//Blocks fall by pixels. Special handling each time it falls
 		//a full block size
-		if (this.__currBlock.ydrift >= this.__blockHeight || key == 'down') {
+		if (this.__currBlock.ydrift >= this.__blockHeight || this.__lastKey == Event.KEY_DOWN) {
 			//reset the drift and move the block down 1
 			this.__currBlock.ydrift = 0;
 			this.__moveBlock(this.__currBlock, this.__currBlock.x, this.__currBlock.y+1);
 
-			//handle keys
-			if (key == 'down') {
-				shortDelay = true;
-			} else if (key == 'up') {
-				this.__rotate_block(this.__currBlock);
-			} else if (key == 'left' || key == 'right') {
-				var dir = (key == 'left') ? 1 : -1;
-				this.__moveBlock(this.__currBlock, this.__currBlock.x-dir, this.__currBlock.y);
-			}
-
 			//test to see if the block can still move down
 			var result = this.__moveBlock(this.__currBlock, this.__currBlock.x, this.__currBlock.y+1, true);
 			if (result == 'block' || result == 'vert') {
-				this.lastKey = key;
-				this.__endBlock();
+				setTimeout(this.__endBlock.bind(this), 0);
 				return;
 			}
-		} else {
-			//normal block falling code
-			if (key == 'up') {
-				//need to artificialy move the block down one before test
-				this.__currBlock.y++;
-				var ok = (this.__rotate_block(this.__currBlock, true) == 'ok');
-				--this.__currBlock.y;
-				if (ok) {
-					this.__rotate_block(this.__currBlock);
-				} else {
-					//this needs to be called even though the test
-					//will reset the block because the block was moved
-					//down one
-					this.__currBlock.updateBlock();
-				}
-			}
-			if (key == 'left' || key == 'right') {
-				var dir = (key == 'left') ? 1 : -1;
-				if (this.__moveBlock(this.__currBlock, this.__currBlock.x-dir, this.__currBlock.y+1, true) == 'ok') {
-					this.__moveBlock(this.__currBlock, this.__currBlock.x-dir, this.__currBlock.y);
-				}
-			}
+
+			this.__lastKey = null;
 		}
 
 		this.__currBlock.ydrift += 2;
 		this.__currBlock.drawBlock();
 
-		setTimeout(this.__fallBlock.bind(this), shortDelay ? 15 : this.__delay);
+		this.__timeout = setTimeout(this.__fallBlock.bind(this), this.__delay);
 	},
 
 	__endBlock : function() {
-		if (this.__lastKey == 'left' || this.__lastKey == 'right') {
-			var dir = (this.__lastKey == 'left') ? 1 : -1;
+		if (this.__lastKey == Event.KEY_LEFT || this.__lastKey == Event.KEY_RIGHT) {
+			var dir = (this.__lastKey == Event.KEY_LEFT) ? 1 : -1;
 			var r = this.__moveBlock(this.__currBlock, this.__currBlock.x-dir, this.__currBlock.y);
 			if (r == "ok") {
 				r = this.__moveBlock(this.__currBlock, this.__currBlock.x, this.__curBlock.y+1,true);
 				if (r == "ok") {
 					this.__lastKey = null;
-					setTimeout(this.__fallBlock.bind(this), this.__delay);
+					this.__fallBlock();
 					return;
 				}
 			}
@@ -272,7 +235,7 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 		}
 
 		if (this.__state != "done") {
-			setTimeout(this.__startBlock.bind(this), 0);
+			this.__startBlock();
 		}
 	},
 
@@ -307,7 +270,7 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 
 	//try to rotate the block and return result. 
 	//if test is true the block will not actually be rotated
-	__rotate_block : function(block, test) {
+	__rotateBlock : function(block, test) {
 		var angle = (block.angle + 1) % 4;
 		var err = this.__testBlock(block, block.x, block.y, angle);
 		if (err == 'ok' && !test) {
@@ -455,23 +418,38 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 	},
 
 	_keypressed : function(evt) {
-		if (evt.keyCode == Event.KEY_LEFT)
-			this.lastKey = 'left';
-		else if (evt.keyCode == Event.KEY_UP)
-			this.lastKey = 'up';
-		else if (evt.keyCode == Event.KEY_RIGHT)
-			this.lastKey = 'right';
-		else if (evt.keyCode == Event.KEY_DOWN)
-			this.lastKey = 'down';
-		else if (evt.keyCode == Event.KEY_ESC) {
+		if (this.__state == 'playing') {
+			this.__lastKey = evt.keyCode;
+			var block = this.__currBlock;
+			if (evt.keyCode == Event.KEY_LEFT) {
+				if (this.__moveBlock(block, block.x-1, block.y+1, true) == 'ok') {
+					this.__moveBlock(block, block.x-1, block.y, false);
+				}
+			} else if (evt.keyCode == Event.KEY_RIGHT) {
+				if (this.__moveBlock(block, block.x+1, block.y+1, true) == 'ok') {
+					this.__moveBlock(block, block.x+1, block.y, false);
+				}
+			} else if (evt.keyCode == Event.KEY_UP) {
+				if (this.__rotateBlock(block, true) == 'ok') {
+					this.__rotateBlock(block, false);
+				}
+			} else if (evt.keyCode == Event.KEY_DOWN) {
+				clearTimeout(this.__timeout);
+				setTimeout(this.__fallBlock.bind(this), 0);
+			}
+		}
+		if (evt.keyCode == Event.KEY_ESC) {
 			if (this.__state == "ready" || this.__state == "done") {
 				this.start();
 			} else if (this.__state == "paused") {
-				this.__messageText.hide();
 				this.__state = "playing";
+				this.__messageText.hide();
 				this.__fallBlock();
 			} else {
-				this.lastKey = 'pause';
+				this.__state = 'paused';
+				this.__messageText.update(this._text('tetris_paused'));
+				this.__messageText.show();
+				clearTimeout(this.__timeout);
 			}
 		}
 	}
