@@ -3,6 +3,7 @@ body {
 	font-size: 0.8em;
 	margin: 0;
 	padding: 0;
+	color: #666;
 }
 
 .games_container {
@@ -20,6 +21,10 @@ body {
 
 .games_help_content {
 	text-align: left;
+	background: white;
+	color: black;
+	padding: 0.5em;
+	border: 1px solid #666666;
 }
 
 .games_canvas {
