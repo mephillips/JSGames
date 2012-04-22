@@ -118,10 +118,12 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 	},
 
 	setLevel : function(level) {
-		this.__level = level;
+		var scoreData = Sawkmonkey.Games.Tetris.ScoreData;
+
+		this.__level = Math.min(level, scoreData.length);
 		this.__levelText.update(level);
-		this.__delay = (169 - 16*(this.__level))/2;
-		this.__nextLevelScore = this.__score + this.__level*50;
+		this.__nextLevelScore = scoreData[this.__level - 1][0];
+		this.__delay = scoreData[this.__level - 1][1];
 	},
 
 	__setScore : function(newScore) {
@@ -222,7 +224,12 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 			}
 			this.__setScore(this.__score + (2<<cleared));
 			if (this.__score >= this.__nextLevelScore) {
-				this.setLevel(this.__level + 1);
+				var nextLevel = this.__level + 1;
+				if (nextLevel > Sawkmonkey.Games.Tetris.ScoreData.length) {
+					this.__endGame(true);
+				} else {
+					this.setLevel(nextLevel);
+				}
 			}
 		}
 
@@ -231,8 +238,12 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 		}
 	},
 
-	__endGame : function() {
-		this.__messageText.update(this._text('tetris_gave_over'));
+	__endGame : function(win) {
+		if (win) {
+			this.__messageText.update(this._text('tetris_win'));
+		} else {
+			this.__messageText.update(this._text('tetris_gave_over'));
+		}
 		this.__messageText.show();
 		this.__state = "done";
 	},
@@ -264,7 +275,7 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 	//if test is true the block will not actually be rotated
 	__rotateBlock : function(block, test) {
 		var angle = (block.angle + 1) % 4;
-		var err = this.__testBlock(block, block.x, block.y, angle);
+		var err = this.__testBlock(block, block.x, block.y + 1, angle);
 		if (err == 'ok' && !test) {
 			block.angle = angle;
 			block.drawBlock();
@@ -413,21 +424,20 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 		if (this.__state == 'playing') {
 			this.__lastKey = evt.keyCode;
 			var block = this.__currBlock;
-			if (evt.keyCode == Event.KEY_LEFT) {
-				if (this.__moveBlock(block, block.x-1, block.y+1, true) == 'ok') {
-					this.__moveBlock(block, block.x-1, block.y, false);
-				}
-			} else if (evt.keyCode == Event.KEY_RIGHT) {
-				if (this.__moveBlock(block, block.x+1, block.y+1, true) == 'ok') {
-					this.__moveBlock(block, block.x+1, block.y, false);
-				}
-			} else if (evt.keyCode == Event.KEY_UP) {
-				if (this.__rotateBlock(block, true) == 'ok') {
-					this.__rotateBlock(block, false);
+			if (evt.keyCode == Event.KEY_LEFT || evt.keyCode == Event.KEY_RIGHT) {
+				var dir = (evt.keyCode == Event.KEY_LEFT) ? 1 : -1;
+				if (this.__moveBlock(block, block.x-dir, block.y+1, true) == 'ok') {
+					if (this.__moveBlock(block, block.x-dir, block.y, false) == 'ok') {
+						this.__lastKey = null;
+					}
 				}
 			} else if (evt.keyCode == Event.KEY_DOWN) {
 				clearTimeout(this.__timeout);
 				this.__timeout = setTimeout(this.__fallBlock.bind(this), 0);
+			} else if (evt.keyCode == Event.KEY_UP) {
+				if (this.__rotateBlock(block, false) == 'ok') {
+					this.__lastKey = null;
+				}
 			}
 		}
 		if (evt.keyCode == Event.KEY_ESC) {
@@ -532,6 +542,20 @@ Sawkmonkey.Games.Tetris.BlockData = [
 		[1,0], [1, 1], [1, 2], [0, 1], [2, 3],
 	],
 ];
+
+Sawkmonkey.Games.Tetris.ScoreData = [
+	[ 32, 80 ],
+	[ 64, 70 ],
+	[ 128, 60 ],
+	[ 256, 50 ],
+	[ 512, 40 ],
+	[ 1024, 30 ],
+	[ 2048, 20 ],
+	[ 4096, 10 ],
+	[ 8192, 5 ],
+	[ 16384, 0 ],
+];
+
 
 Sawkmonkey.Games.Tetris.init = function(elm) {
 	var t = new Sawkmonkey.Games.Tetris(elm, 'tetris');

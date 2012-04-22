@@ -30,4 +30,5 @@ Sawkmonkey.Games.Text = {
 	'tetris_ready' : 'Ready?<br/>(Push ESC)',
 	'tetris_paused' : 'Paused<br/>(Push ESC)',
 	'tetris_gave_over' : 'Game Over',
+	'tetris_win' : 'You Win!',
 };
