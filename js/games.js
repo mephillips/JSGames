@@ -46,24 +46,36 @@ Sawkmonkey.Games.Game = Class.create(
 	__helpEffect : null,
 
 	/**
+	 * Create a new Game object but do no other initilization.
 	 * @param {Object} elm The id of, or element to use for the game root.
 	 */
 	initialize : function(elm, gameId) {
 		this.__elm = $(elm);
 		this.__gameId = gameId;
-		this.hide();
 	},
 
+	/**
+	 * Initialize this game, creating and DOM elements and doing any other
+	 * work needed to make the game work.
+	 */
 	init : function() {
 		this.__elm.addClassName('games_container');
 		this.__elm.insert(this._createTitle());
 		this.__elm.insert(this._createHelp());
+		this.__elm.insert(this._createCanvas());
+		Event.observe(document, 'keypress', this._keypressed.bind(this));
 	},
 
+	/**
+	 * Make the game visible
+	 */
 	show : function() {
 		this.__elm.show();
 	},
 
+	/**
+	 *  Hibe the game
+	 */
 	hide : function() {
 		this.__elm.hide();
 	},
@@ -91,8 +103,16 @@ Sawkmonkey.Games.Game = Class.create(
 		return elm;
 	},
 
+	_createCanvas : function() {
+		var elm = new Element('div', { 'class' : 'games_canvas' });
+		return elm;
+	},
+
 	_text : function(id) {
 		return Sawkmonkey.Games.Text[id];
+	},
+
+	_keypressed : function(evt) {
 	},
 
 	__showHelp : function(evt) {

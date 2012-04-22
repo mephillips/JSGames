@@ -1,10 +1,11 @@
 body {
-	background-color: #000000;
-	color: #CCCCCC;
 	font-family: verdana,arial,sans-serif;
 	font-size: 0.8em;
 	margin: 0;
 	padding: 0;
+}
+
+.games_container {
 }
 
 .games_title {
@@ -19,4 +20,13 @@ body {
 
 .games_help_content {
 	text-align: left;
+}
+
+.games_canvas {
+	position: relative;
+	top: 1.2em;
+}
+
+.games_border {
+	border: 1px solid #666666;
 }
