@@ -112,6 +112,7 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 		for (var i = 0; i < this.__rows; ++i) {
 			this.__rowSize[i] = 0;
 		}
+		this.__lastKey = null;
 		this.__nextBlock = this.__makeBlock();
 		this.__startBlock();
 	},
@@ -143,7 +144,6 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 		var result = this.__moveBlock(this.__currBlock, start_loc, 0, false);
 		if (result == 'ok') {
 			this.__nextBlock = this.__makeBlock();
-			this.lastKey = null;
 			this.__fallBlock();
 		} else if (result == 'block') {
 			this.__endGame(false);
@@ -160,14 +160,19 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 			this.__currBlock.ydrift = 0;
 			this.__moveBlock(this.__currBlock, this.__currBlock.x, this.__currBlock.y+1);
 
+			// Support moving block sideways into gaps
+			if (this.__lastKey == Event.KEY_LEFT || this.__lastKey == Event.KEY_RIGHT) {
+				var dir = (this.__lastKey == Event.KEY_LEFT) ? 1 : -1;
+				this.__moveBlock(this.__currBlock, this.__currBlock.x-dir, this.__currBlock.y);
+			}
+			this.__lastKey = null;
+
 			//test to see if the block can still move down
 			var result = this.__moveBlock(this.__currBlock, this.__currBlock.x, this.__currBlock.y+1, true);
 			if (result == 'block' || result == 'vert') {
 				setTimeout(this.__endBlock.bind(this), 0);
 				return;
 			}
-
-			this.__lastKey = null;
 		}
 
 		this.__currBlock.ydrift += 2;
@@ -177,19 +182,6 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 	},
 
 	__endBlock : function() {
-		if (this.__lastKey == Event.KEY_LEFT || this.__lastKey == Event.KEY_RIGHT) {
-			var dir = (this.__lastKey == Event.KEY_LEFT) ? 1 : -1;
-			var r = this.__moveBlock(this.__currBlock, this.__currBlock.x-dir, this.__currBlock.y);
-			if (r == "ok") {
-				r = this.__moveBlock(this.__currBlock, this.__currBlock.x, this.__curBlock.y+1,true);
-				if (r == "ok") {
-					this.__lastKey = null;
-					this.__fallBlock();
-					return;
-				}
-			}
-		}
-
 		//add the block pieces to the play area
 		var max = 0;
 		var min = this.__rows - 1;
@@ -435,7 +427,7 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 				}
 			} else if (evt.keyCode == Event.KEY_DOWN) {
 				clearTimeout(this.__timeout);
-				setTimeout(this.__fallBlock.bind(this), 0);
+				this.__timeout = setTimeout(this.__fallBlock.bind(this), 0);
 			}
 		}
 		if (evt.keyCode == Event.KEY_ESC) {
@@ -460,6 +452,7 @@ Sawkmonkey.Games.Tetris.Block = Class.create(
 {
 	BLOCK_TYPES : 7,
 	BLOCK_ANGLES : 4,
+	PIECES : 4,
 
 	initialize : function(startX, blockWidth, blockHeight, blocks) {
 		this.x = startX;
@@ -470,7 +463,7 @@ Sawkmonkey.Games.Tetris.Block = Class.create(
 		this.angle = Math.floor(Math.random()*this.BLOCK_ANGLES)
 		this.blockWidth = blockWidth;
 		this.blockHeight = blockHeight;
-		for (var i = 0; i < 4; ++i) {
+		for (var i = 0; i < this.PIECES; ++i) {
 			this.pieces[i] = blocks.pop();
 			this.pieces[i].addClassName('tetris_bg' + this.type);
 			this.pieces[i].type = this.type;
@@ -490,254 +483,55 @@ Sawkmonkey.Games.Tetris.Block = Class.create(
 	},
 
 	updateBlock : function() {
-		switch (this.type) {
-			//..
-			//..
-			case 0:
-				this.pieces[0].x = 0;
-				this.pieces[0].y = 0;
-				this.pieces[1].x = 1;
-				this.pieces[1].y = 0;
-				this.pieces[2].x = 0;
-				this.pieces[2].y = 1;
-				this.pieces[3].x = 1;
-				this.pieces[3].y = 1;
-				this.width = 2;
-				this.height = 2;
-			break;
-			//.... .
-			//     .
-			//     .
-			//     .
-			case 1:
-				if (this.angle % 2 == 0) {
-					for (var i = 0; i < this.pieces.length; ++i) {
-						this.pieces[i].y = 0;
-						this.pieces[i].x = i;
-					}
-					this.width = 4;
-					this.height = 1;
-				} else {
-					for (var i = 0; i < this.pieces.length; ++i) {
-						this.pieces[i].y = i;
-						this.pieces[i].x = 0;
-					}
-					this.width = 1;
-					this.height = 4;
-				}
-			break;
-			//.   ..
-			//.. ..
-			// .
-			case 2:
-				if (this.angle % 2 == 0) {
-					this.pieces[0].x = 0;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 0;
-					this.pieces[1].y = 1;
-					this.pieces[2].x = 1;
-					this.pieces[2].y = 1;
-					this.pieces[3].x = 1;
-					this.pieces[3].y = 2;
-					this.width = 2;
-					this.height = 3;
-				} else {
-					this.pieces[0].x = 1
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 2;
-					this.pieces[1].y = 0;
-					this.pieces[2].x = 0;
-					this.pieces[2].y = 1;
-					this.pieces[3].x = 1;
-					this.pieces[3].y = 1;
-					this.width = 3;
-					this.height = 2;
-				}
-			break;
-			// . ..
-			//..  ..
-			//.
-			case 3:
-				if (this.angle % 2 == 0) {
-					this.pieces[0].x = 1;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 0;
-					this.pieces[1].y = 1;
-					this.pieces[2].x = 1;
-					this.pieces[2].y = 1;
-					this.pieces[3].x = 0;
-					this.pieces[3].y = 2;
-					this.width = 2;
-					this.height = 3;
-				} else {
-					this.pieces[0].x = 0;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 1;
-					this.pieces[1].y = 0;
-					this.pieces[2].x = 1;
-					this.pieces[2].y = 1;
-					this.pieces[3].x = 2;
-					this.pieces[3].y = 1;
-					this.width = 3;
-					this.height = 2;
-				}
-			break;
-			//  . .   ... ..
-			//... .   .    .
-			//    ..       .
-			case 4:
-				if (this.angle  == 0) {
-					this.pieces[0].x = 0;
-					this.pieces[0].y = 1;
-					this.pieces[1].x = 1;
-					this.pieces[1].y = 1;
-					this.pieces[2].x = 2;
-					this.pieces[2].y = 1;
-					this.pieces[3].x = 2;
-					this.pieces[3].y = 0;
-					this.width = 3;
-					this.height = 2;
-				} else if (this.angle == 1) {
-					this.pieces[0].x = 0;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 0;
-					this.pieces[1].y = 1;
-					this.pieces[2].x = 0;
-					this.pieces[2].y = 2;
-					this.pieces[3].x = 1;
-					this.pieces[3].y = 2;
-					this.width = 2;
-					this.height = 3;
-				} else if (this.angle == 2) {
-					this.pieces[0].x = 0;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 1;
-					this.pieces[1].y = 0;
-					this.pieces[2].x = 2;
-					this.pieces[2].y = 0;
-					this.pieces[3].x = 0;
-					this.pieces[3].y = 1;
-					this.width = 3;
-					this.height = 2;
-				} else if (this.angle == 3) {
-					this.pieces[0].x = 0;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 1;
-					this.pieces[1].y = 0;
-					this.pieces[2].x = 1;
-					this.pieces[2].y = 1;
-					this.pieces[3].x = 1;
-					this.pieces[3].y = 2;
-					this.width = 2;
-					this.height = 3;
-				}
-			break;
-			//.   ..  ...  .
-			//... .     .  .
-			//    .       ..
-			case 5:
-				if (this.angle  == 0) {
-					this.pieces[0].x = 0;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 0;
-					this.pieces[1].y = 1;
-					this.pieces[2].x = 1;
-					this.pieces[2].y = 1;
-					this.pieces[3].x = 2;
-					this.pieces[3].y = 1;
-					this.width = 3;
-					this.height = 2;
-				} else if (this.angle == 1) {
-					this.pieces[0].x = 0;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 1;
-					this.pieces[1].y = 0;
-					this.pieces[2].x = 0;
-					this.pieces[2].y = 1;
-					this.pieces[3].x = 0;
-					this.pieces[3].y = 2;
-					this.width = 2;
-					this.height = 3;
-				} else if (this.angle == 2) {
-					this.pieces[0].x = 0;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 1;
-					this.pieces[1].y = 0;
-					this.pieces[2].x = 2;
-					this.pieces[2].y = 0;
-					this.pieces[3].x = 2;
-					this.pieces[3].y = 1;
-					this.width = 3;
-					this.height = 2;
-				} else if (this.angle == 3) {
-					this.pieces[0].x = 1;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 1;
-					this.pieces[1].y = 1;
-					this.pieces[2].x = 1;
-					this.pieces[2].y = 2;
-					this.pieces[3].x = 0;
-					this.pieces[3].y = 2;
-					this.width = 2;
-					this.height = 3;
-				}
-			break;
-			// .  .  ...  .
-			//... ..  .  ..
-			//    .       .
-			case 6:
-				if (this.angle  == 0) {
-					this.pieces[0].x = 1;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 0;
-					this.pieces[1].y = 1;
-					this.pieces[2].x = 1;
-					this.pieces[2].y = 1;
-					this.pieces[3].x = 2;
-					this.pieces[3].y = 1;
-					this.width = 3;
-					this.height = 2;
-				} else if (this.angle == 1) {
-					this.pieces[0].x = 0;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 0;
-					this.pieces[1].y = 1;
-					this.pieces[2].x = 0;
-					this.pieces[2].y = 2;
-					this.pieces[3].x = 1;
-					this.pieces[3].y = 1;
-					this.width = 2;
-					this.height = 3;
-				} else if (this.angle == 2) {
-					this.pieces[0].x = 0;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 1;
-					this.pieces[1].y = 0;
-					this.pieces[2].x = 2;
-					this.pieces[2].y = 0;
-					this.pieces[3].x = 1;
-					this.pieces[3].y = 1;
-					this.width = 3;
-					this.height = 2;
-				} else if (this.angle == 3) {
-					this.pieces[0].x = 1;
-					this.pieces[0].y = 0;
-					this.pieces[1].x = 1;
-					this.pieces[1].y = 1;
-					this.pieces[2].x = 1;
-					this.pieces[2].y = 2;
-					this.pieces[3].x = 0;
-					this.pieces[3].y = 1;
-					this.width = 2;
-					this.height = 3;
-				}
-			break;
-			default:
-				console.log("Error: Unknown block type " + this.type);
-			break;
+		var data = Sawkmonkey.Games.Tetris.BlockData[this.type];
+		var ai = 5*this.angle;
+		for (var i = 0; i < this.pieces.length; ++i ){
+			this.pieces[i].x = data[ai + i][0];
+			this.pieces[i].y = data[ai + i][1];
 		}
+		this.width = data[ai + this.pieces.length][0];
+		this.height = data[ai + this.pieces.length][1];
 	}
 });
+
+Sawkmonkey.Games.Tetris.BlockData = [
+	[ // Square
+		[0,0], [1, 0], [0, 1], [1, 1], [2, 2],
+		[0,0], [1, 0], [0, 1], [1, 1], [2, 2],
+		[0,0], [1, 0], [0, 1], [1, 1], [2, 2],
+		[0,0], [1, 0], [0, 1], [1, 1], [2, 2],
+	], [ // Stick
+		[0,0], [1, 0], [2, 0], [3, 0], [4, 1],
+		[0,0], [0, 1], [0, 2], [0, 3], [1, 4],
+		[0,0], [1, 0], [2, 0], [3, 0], [4, 1],
+		[0,0], [0, 1], [0, 2], [0, 3], [1, 4],
+	], [ // Right shift one
+		[0,0], [0, 1], [1, 1], [1, 2], [2, 3],
+		[1,0], [2, 0], [0, 1], [1, 1], [3, 2],
+		[0,0], [0, 1], [1, 1], [1, 2], [2, 3],
+		[1,0], [2, 0], [0, 1], [1, 1], [3, 2],
+	], [ // Left shift one
+		[1,0], [0, 1], [1, 1], [0, 2], [2, 3],
+		[0,0], [1, 0], [1, 1], [2, 1], [3, 2],
+		[1,0], [0, 1], [1, 1], [0, 2], [2, 3],
+		[0,0], [1, 0], [1, 1], [2, 1], [3, 2],
+	], [ // L
+		[0,1], [1, 1], [2, 1], [2, 0], [3, 2],
+		[0,0], [0, 1], [0, 2], [1, 2], [2, 3],
+		[0,0], [1, 0], [2, 0], [0, 1], [3, 2],
+		[0,0], [1, 0], [1, 1], [1, 2], [2, 3],
+	], [ // Backwards L
+		[0,0], [0, 1], [1, 1], [2, 1], [3, 2],
+		[0,0], [1, 0], [0, 1], [0, 2], [2, 3],
+		[0,0], [1, 0], [2, 0], [2, 1], [3, 2],
+		[1,0], [1, 1], [1, 2], [0, 2], [2, 3],
+	], [ // Try
+		[1,0], [0, 1], [1, 1], [2, 1], [3, 2],
+		[0,0], [0, 1], [0, 2], [1, 1], [2, 3],
+		[0,0], [1, 0], [2, 0], [1, 1], [3, 2],
+		[1,0], [1, 1], [1, 2], [0, 1], [2, 3],
+	],
+];
 
 Sawkmonkey.Games.Tetris.init = function(elm) {
 	var t = new Sawkmonkey.Games.Tetris(elm, 'tetris');
