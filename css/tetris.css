@@ -7,8 +7,11 @@
 }
 
 .tetris_message_text {
-	margin-top: 221px;
+	position: absolute;
+	top: 111px;
+	width: 220px;
 	text-align: center;
+	z-index: 1;
 }
 
 .tetris_preview_area {

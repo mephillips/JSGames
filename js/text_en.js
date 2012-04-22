@@ -28,6 +28,6 @@ Sawkmonkey.Games.Text = {
 	'tetris_title' : 'JS Tetris',
 	'tetris_help' : 'Left - Move block left<br/>Right - Move block right<br/>Up - Rotate block<br/>Down - Make block fall faster<br/>Esc - Pause<br/>',
 	'tetris_ready' : 'Ready?<br/>(Push ESC)',
-	'tetris_paused' : 'Paused',
+	'tetris_paused' : 'Paused<br/>(Push ESC)',
 	'tetris_gave_over' : 'Game Over',
 };

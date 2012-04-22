@@ -115,7 +115,7 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 		this.__level = level;
 		this.__levelText.update(level);
 		this.__delay = (169 - 16*(this.__level))/2;
-		this.__nextLevelScore = this.__score + (this.__level+1)*50;
+		this.__nextLevelScore = this.__score + this.__level*50;
 	},
 
 	__setScore : function(newScore) {
@@ -328,6 +328,7 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 		block.x = x;
 		block.y = y;
 		block.angle = angle;
+		block.updateBlock();
 		for (var i = 0; i < block.pieces.length; ++i) {
 			if (block.x + block.pieces[i].x < 0 || block.x + block.pieces[i].x >= this.__cols) {
 				result = 'horiz';	//block is over a wall
@@ -345,6 +346,7 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 		block.x = origX;
 		block.y = origY;
 		block.angle = origA;
+		block.updateBlock();
 		return result;
 	},
 
