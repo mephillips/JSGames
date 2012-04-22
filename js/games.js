@@ -119,13 +119,13 @@ Sawkmonkey.Games.Game = Class.create(
 		var elm = evt.element();
 		elm = elm.up().down('.games_help_content');
 		if (this.__helpEffect) { this.__helpEffect.cancel(); }
-		this.__helpEffect = Effect.BlindDown(elm);
+		this.__helpEffect = Effect.Appear(elm);
 	},
 
 	__hideHelp : function(evt) {
 		var elm = evt.element();
 		elm = elm.up().down('.games_help_content');
 		if (this.__helpEffect) { this.__helpEffect.cancel(); }
-		this.__helpEffect = Effect.BlindUp(elm);
+		this.__helpEffect = Effect.Fade(elm);
 	}
 });
