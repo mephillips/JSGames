@@ -240,9 +240,9 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 
 	__endGame : function(win) {
 		if (win) {
-			this.__messageText.update(this._text('tetris_win'));
+			this.__messageText.update(this._text('game_win'));
 		} else {
-			this.__messageText.update(this._text('tetris_gave_over'));
+			this.__messageText.update(this._text('game_over'));
 		}
 		this.__messageText.show();
 		this.__state = "done";
@@ -387,7 +387,7 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 		var playArea = new Element('div', { 'class' : 'games_border tetris_play_area' });
 		this.__playArea = playArea;
 		var messageText = new Element('div', { 'class' : 'tetris_message_text'});
-		messageText.update(this._text('tetris_ready'));
+		messageText.update(this._text('game_ready'));
 		playArea.insert(messageText);
 		this.__messageText = messageText;
 		return playArea;
@@ -449,7 +449,7 @@ Sawkmonkey.Games.Tetris = Class.create(Sawkmonkey.Games.Game,
 				this.__fallBlock();
 			} else {
 				this.__state = 'paused';
-				this.__messageText.update(this._text('tetris_paused'));
+				this.__messageText.update(this._text('game_paused'));
 				this.__messageText.show();
 				clearTimeout(this.__timeout);
 			}

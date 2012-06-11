@@ -1,0 +1,47 @@
+.mines_play_area {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 420px;
+	height: 420px;
+}
+
+.mines_message_text {
+	position: absolute;
+	top: 111px;
+	width: 220px;
+	text-align: center;
+	z-index: 1;
+}
+
+.mines_score_area {
+	position: absolute;
+	top: 21px;
+	left: 425px;
+	width: 89px;
+}
+
+.mines_score_text {
+	font-family: monospace;
+	text-align: right;
+	font-size: 1.4em;
+	padding-bottom: 1em;
+}
+
+.mines_block {
+	position: absolute;
+	width: 19px;
+	height: 19px;
+	border: 1px solid black;
+	text-align: center;
+}
+
+.mines_hidden { background-color: rgb(25,50,255); color: rgb(255, 0, 0) }
+.mines_bomb { background-color: rgb(255,0,0); }
+.mines_n1 { color: rgb(0,0,255); }
+.mines_n2 { color: rgb(43,204,43); }
+.mines_n3 { color: rgb(255,0,0); }
+.mines_n4 { color: rgb(136,0,136); }
+.mines_n5 { color: rgb(238,85,0); }
+.mines_n6 { color: rgb(250,240,0); }
+.mines_n7 { color: rgb(0,0,0); }

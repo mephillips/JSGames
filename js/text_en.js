@@ -24,6 +24,11 @@ Sawkmonkey.Games.Text = {
 	'help_link' : 'Help',
 	'score_title' : 'Score',
 	'level_title' : 'Level',
+	'time_title' : 'Time',
+	'game_ready' : 'Ready?<br/>(Push ESC)',
+	'game_paused' : 'Paused<br/>(Push ESC)',
+	'game_over' : 'Game Over',
+	'game_win' : 'You Win!',
 
 	'tetris_title' : 'JS Tetris',
 	'tetris_help' : 'Left - Move block left<br/>Right - Move block right<br/>Up - Rotate block<br/>Down - Make block fall faster<br/>Esc - Pause<br/>',
@@ -31,4 +36,8 @@ Sawkmonkey.Games.Text = {
 	'tetris_paused' : 'Paused<br/>(Push ESC)',
 	'tetris_gave_over' : 'Game Over',
 	'tetris_win' : 'You Win!',
+
+	'mines_title' : 'JS Mines',
+	'mines_help' : 'Click to clear block<br/>Right Click to flag block<br/>',
+	'mines_flags_title' : 'Mines'
 };
