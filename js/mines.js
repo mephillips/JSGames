@@ -103,12 +103,11 @@ Sawkmonkey.Games.Mines = Class.create(Sawkmonkey.Games.Game,
 	__timeout : null,
 
 	__placeMines : function() {
-		for (var m = 0; m < this.__mines; ++m) {
+		var m = this.__mines;
+		while (m > 0) {
 			var i = Math.floor((Math.random() * this.__cols));
 			var j = Math.floor((Math.random() * this.__rows));
-			if (this.__blocks[i][j].num < 0) {
-				continue;
-			}
+			if (this.__blocks[i][j].num < 0) { continue; }
 			this.__blocks[i][j].num = -255;
 			this.__blocks[i][j].mine = true;
 			//look at all blocks around the bomb and increas
@@ -119,6 +118,7 @@ Sawkmonkey.Games.Mines = Class.create(Sawkmonkey.Games.Game,
 						this.__blocks[k][l].num++;
 				}
 			}
+			--m;
 		}
 	},
 
@@ -197,7 +197,7 @@ Sawkmonkey.Games.Mines = Class.create(Sawkmonkey.Games.Game,
 			} else {
 				block.flag = true;
 				this.__setFlags(this.__flagged + 1);
-				if (block.mines) {
+				if (block.mine) {
 					++this.__minesFlagged;
 				}
 			}
@@ -313,6 +313,7 @@ Sawkmonkey.Games.Mines = Class.create(Sawkmonkey.Games.Game,
 		}
 		this.__placeMines();
 		this.__redrawPlayArea();
+		this.__timeout = setTimeout(this.__tick.bind(this), 1000);
 	},
 
 	init : function($super) {
@@ -355,6 +356,12 @@ Sawkmonkey.Games.Mines = Class.create(Sawkmonkey.Games.Game,
 			y = 0;
 			x += this.__blockWidth;
 		}
+
+		var msgDims = this.__messageText.getDimensions();
+		this.__messageText.setStyle({
+			'top' : (dims.height - msgDims.height)/2 + 'px',
+			'left' : (dims.width - msgDims.width)/2 + 'px'
+		});
 	},
 
 	_createCanvas : function($super) {
