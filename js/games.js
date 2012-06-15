@@ -63,7 +63,7 @@ Sawkmonkey.Games.Game = Class.create(
 		this.__elm.insert(this._createTitle());
 		this.__elm.insert(this._createHelp());
 		this.__elm.insert(this._createCanvas());
-		Event.observe(document, 'keypress', this._keypressed.bind(this));
+		Event.observe(document, 'keydown', this._keypressed.bind(this));
 	},
 
 	/**
