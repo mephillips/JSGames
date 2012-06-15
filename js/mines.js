@@ -173,6 +173,11 @@ Sawkmonkey.Games.Mines = Class.create(Sawkmonkey.Games.Game,
 		if (text) {
 			this.__messageText.update(text);
 			this.__messageText.show();
+			var msgDims = this.__messageText.getDimensions();
+			this.__messageText.setStyle({
+				'top' : Math.round((this.__blockHeight*this.__rows - msgDims.height)/2) + 'px',
+				'left' : Math.round((this.__blockWidth*this.__cols - msgDims.width)/2) + 'px'
+			});
 		} else {
 			this.__messageText.hide();
 		}
@@ -292,7 +297,6 @@ Sawkmonkey.Games.Mines = Class.create(Sawkmonkey.Games.Game,
 	},
 
 	start : function() {
-		this.__readParams();
 		this.__state = 'playing';
 		this.__setMessage('');
 		this.__setTime(0);
@@ -357,11 +361,8 @@ Sawkmonkey.Games.Mines = Class.create(Sawkmonkey.Games.Game,
 			x += this.__blockWidth;
 		}
 
-		var msgDims = this.__messageText.getDimensions();
-		this.__messageText.setStyle({
-			'top' : (dims.height - msgDims.height)/2 + 'px',
-			'left' : (dims.width - msgDims.width)/2 + 'px'
-		});
+		this.__readParams();
+		this.__setMessage(this._text('game_ready'));
 	},
 
 	_createCanvas : function($super) {
@@ -375,7 +376,6 @@ Sawkmonkey.Games.Mines = Class.create(Sawkmonkey.Games.Game,
 		var playArea = new Element('div', { 'class' : 'mines_play_area' });
 		this.__playArea = playArea;
 		var messageText = new Element('div', { 'class' : 'mines_message_text'});
-		messageText.update(this._text('game_ready'));
 		playArea.insert(messageText);
 		this.__messageText = messageText;
 		return playArea;
